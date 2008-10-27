@@ -183,11 +183,10 @@ public:
     size_t mockSize = sizeof(Mock<T>);
     unsigned char* mockData = new unsigned char[mockSize];
 	memset(mockData, 0, mockSize);
-    Mock<T>* mock = reinterpret_cast<Mock<T>*>(mockData);
-    
-    // Point mock vptr to donor vtable.
-    VTableDonor donor;
-    *(void**) mock = *(void**)&donor;
+
+    // Create VTableDonor object in the memory allocated for the mock to 
+	// point the Mock VPtr at the VTableDonor VTable using placement new.
+	Mock<T>* mock = reinterpret_cast<Mock<T>*>(new (mockData) VTableDonor);
 
     // Initialize mock data members.
     mock->mExpectedCalls = std::vector<Call*>();
@@ -330,10 +329,9 @@ public:
 	std::cerr << "Error! ProductionClass bar should never be called" << std::endl;
   }
 
-  virtual void baz()
-  {
-	std::cerr << "Error! ProductionClass baz should never be called" << std::endl;
-  }
+  virtual void baz(); // Deliberately no body to ensure this does not cause a linker error
+
+
 };
 
 int main()

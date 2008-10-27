@@ -88,6 +88,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Run Tests"
+				CommandLine="$(TargetPath)"
 			/>
 		</Configuration>
 		<Configuration
@@ -165,6 +167,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Run Tests"
+				CommandLine="$(TargetPath)"
 			/>
 		</Configuration>
 	</Configurations>

@@ -33,63 +33,64 @@
 
 namespace m0cxx0r
 {
-    class IParam
+    class Param
     {
     public:
-        IParam() {;}
-        virtual ~IParam() {;}
-        virtual IParam* clone() = 0;
+        Param() {;}
+        virtual ~Param() {;}
+        virtual Param* clone() = 0;
         virtual void setValue(unsigned char* p0) = 0;
-        virtual bool isEqual(IParam* iparam) = 0;
+        virtual bool isEqual(Param* Param) = 0;
         virtual std::string getString() = 0;
     };
 
     template<typename ParamType>
-    struct Param : public IParam
+    struct EqualParam : public Param
     {
     public:
 
-        Param(unsigned char* p0, ParamType* param) :
-          mOffset((unsigned char*)(param) - p0),
-              mParam(*param)
-          {
-          }
+        EqualParam(unsigned char* p0, ParamType* param) : 
+			mOffset(reinterpret_cast<unsigned char*>(param) - p0),
+            mValue(*param)
+        {
+        }
 
-          virtual ~Param() {;}
+        virtual ~EqualParam() {;}
 
-          virtual IParam* clone()
-          {
-              Param* result = new Param();
-              result->mOffset = mOffset;
-              result->mParam = mParam;
-              return result;
-          }
+        virtual Param* clone()
+        {
+            EqualParam* result = new EqualParam();
+            result->mOffset = mOffset;
+            result->mValue = mValue;
+            return result;
+        }
 
-          virtual void setValue(unsigned char* p0)
-          {
-              ParamType* param = (ParamType*)(p0 + mOffset);
-              mParam = *param;
-          }
+        virtual void setValue(unsigned char* p0)
+        {
+            ParamType* param = reinterpret_cast<ParamType*>(p0 + mOffset);
+            mValue = *param;
+        }
 
-          virtual bool isEqual(IParam* iparam)
-          {
-              Param* param = static_cast<Param*>(iparam);
-              return mParam == param->mParam;
-          }
+        virtual bool isEqual(Param* param)
+        {
+			// TODO: dynamic cast when param may not be an EqualParam.
+            EqualParam* equalParam = static_cast<EqualParam*>(param);
+            return mValue == equalParam->mValue;
+        }
 
-          virtual std::string getString()
-          {
-              std::ostringstream stream;
-              stream << mParam;
-              return stream.str();
-          }
+        virtual std::string getString()
+        {
+            std::ostringstream stream;
+            stream << mValue;
+            return stream.str();
+        }
 
     private:
 
-        Param() {;}
+        EqualParam() {;}
 
-        int mOffset;
-        ParamType mParam;
+		std::ptrdiff_t mOffset;
+        ParamType mValue;
     };
 
     class Call
@@ -106,7 +107,7 @@ namespace m0cxx0r
           {
               Call* result = new Call(mName);
               result->mIndex = mIndex;
-              std::vector<IParam*>::iterator i;
+              std::vector<Param*>::iterator i;
               for(i = mParameters.begin(); i != mParameters.end(); ++i)
               {
                   result->addParameter((*i)->clone());
@@ -114,7 +115,7 @@ namespace m0cxx0r
               return result;
           }
 
-          void addParameter(IParam* param) {mParameters.push_back(param);}
+          void addParameter(Param* EqualParam) {mParameters.push_back(EqualParam);}
 
           size_t getIndex()
           {
@@ -168,7 +169,7 @@ namespace m0cxx0r
     private:
         std::string mName;
         size_t mIndex;
-        typedef std::vector<IParam*> ParamVector;
+        typedef std::vector<Param*> ParamVector;
         ParamVector mParameters;
     };
 
@@ -199,7 +200,7 @@ namespace m0cxx0r
         static void destroy(Mock** mock)
         {
             // Delete byte array created for mock.
-            unsigned char* mockData = (unsigned char*) (*mock);
+            unsigned char* mockData = reinterpret_cast<unsigned char*>(*mock);
             delete[] mockData;
 
             // Null given pointer.
@@ -221,7 +222,7 @@ namespace m0cxx0r
         {
             mRecordingExpected = true;
             Call* expectedCall = new Call(name);
-            expectedCall->addParameter(new Param<ParamType0>((unsigned char*)(&p0), &p0));
+            expectedCall->addParameter(new EqualParam<ParamType0>((unsigned char*)(&p0), &p0));
             mExpectedCalls.push_back(expectedCall);
             ((this)->*(func))(p0);
             mRecordingExpected = false;
@@ -232,8 +233,8 @@ namespace m0cxx0r
         {
             mRecordingExpected = true;
             Call* expectedCall = new Call(name);
-            expectedCall->addParameter(new Param<ParamType0>((unsigned char*)(&p0), &p0));
-            expectedCall->addParameter(new Param<ParamType1>((unsigned char*)(&p0), &p1));
+            expectedCall->addParameter(new EqualParam<ParamType0>((unsigned char*)(&p0), &p0));
+            expectedCall->addParameter(new EqualParam<ParamType1>((unsigned char*)(&p0), &p1));
             mExpectedCalls.push_back(expectedCall);
             ((this)->*(func))(p0, p1);
             mRecordingExpected = false;
@@ -314,7 +315,7 @@ class ProductionClass
 {
 public:
 
-    ProductionClass(size_t param)
+    ProductionClass(size_t EqualParam)
     {
         std::cerr << "Error! ProductionClass ctor should never be called" << std::endl;
     }
@@ -330,8 +331,6 @@ public:
     }
 
     virtual void baz(); // Deliberately no body to ensure this does not cause a linker error
-
-
 };
 
 int main()
@@ -339,7 +338,10 @@ int main()
     typedef m0cxx0r::Mock<ProductionClass> MockClass;
     MockClass* mock = MockClass::create();
     mock->expect("foo", &ProductionClass::foo, 42);
+	// TODO: mock->repeat(2);
     mock->expect("bar", &ProductionClass::bar, 42, 43);
+	// TODO: mock->expect("foo", m0cxx0r::AnyValue, 42, m0cxx0r::NotNull)
+	// TODO: mock->repeat(m0cxx0r::ZERO_OR_MORE);
     mock->expect("baz", &ProductionClass::baz);
     mock->foo(42);
     mock->bar(3, 4); // bad parameters

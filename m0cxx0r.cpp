@@ -10,7 +10,7 @@
 // * Redistributions in binary form must reproduce the above copyright notice,
 //   this list of conditions and the following disclaimer in the documentation
 //   and/or other materials provided with the distribution.
-// * Neither the name of the <ORGANIZATION> nor the names of its contributors
+// * Neither the name of the organisation nor the names of its contributors
 //   may be used to endorse or promote products derived from this software 
 //   without specific prior written permission.
 //
@@ -80,7 +80,7 @@ namespace m0cxx0r
     virtual std::string getString()
     {
       std::ostringstream stream;
-      stream << mParam << std::ends;
+      stream << mParam;
       return stream.str();
     }
 
@@ -182,6 +182,7 @@ public:
     // Allocate memory for mock.
     size_t mockSize = sizeof(Mock<T>);
     unsigned char* mockData = new unsigned char[mockSize];
+	memset(mockData, 0, mockSize);
     Mock<T>* mock = reinterpret_cast<Mock<T>*>(mockData);
     
     // Point mock vptr to donor vtable.
@@ -216,14 +217,26 @@ public:
     mRecordingExpected = false;
   }
 
-  template<typename MemberFuncType, typename ParamType1>
-  void expect(const std::string& name, MemberFuncType func, ParamType1 p1)
+  template<typename MemberFuncType, typename ParamType0>
+  void expect(const std::string& name, MemberFuncType func, ParamType0 p0)
   {
     mRecordingExpected = true;
     Call* expectedCall = new Call(name);
-    expectedCall->addParameter(new Param<ParamType1>((unsigned char*)(&p1), &p1));
+    expectedCall->addParameter(new Param<ParamType0>((unsigned char*)(&p0), &p0));
     mExpectedCalls.push_back(expectedCall);
-    ((this)->*(func))(p1);
+    ((this)->*(func))(p0);
+    mRecordingExpected = false;
+  }
+
+  template<typename MemberFuncType, typename ParamType0, typename ParamType1>
+  void expect(const std::string& name, MemberFuncType func, ParamType0 p0, ParamType1 p1)
+  {
+    mRecordingExpected = true;
+    Call* expectedCall = new Call(name);
+    expectedCall->addParameter(new Param<ParamType0>((unsigned char*)(&p0), &p0));
+	expectedCall->addParameter(new Param<ParamType1>((unsigned char*)(&p0), &p1));
+    mExpectedCalls.push_back(expectedCall);
+    ((this)->*(func))(p0, p1);
     mRecordingExpected = false;
   }
 
@@ -263,9 +276,9 @@ private:
 
   class VTableDonor
   {
-    virtual void f1(size_t p0) {((Mock*) this)->recordCall(1, (unsigned char*)(&p0));}
-    virtual void f2(size_t p0) {((Mock*) this)->recordCall(2, (unsigned char*)(&p0));}
-    virtual void f3(size_t p0) {((Mock*) this)->recordCall(3, (unsigned char*)(&p0));}
+    virtual void  f1(size_t p0) {((Mock*) this)->recordCall(1, (unsigned char*)(&p0));}
+    virtual void  f2(size_t p0) {((Mock*) this)->recordCall(2, (unsigned char*)(&p0));}
+    virtual void  f3(size_t p0) {((Mock*) this)->recordCall(3, (unsigned char*)(&p0));}
     // TODO: Add more virtual methods as needed.
   };
 
@@ -301,25 +314,37 @@ private:
 class ProductionClass
 {
 public:
+
   ProductionClass(size_t param)
   {
     std::cerr << "Error! ProductionClass ctor should never be called" << std::endl;
   }
   
-  virtual void foo() {;}
-  virtual void bar(size_t) {;}
-  virtual void baz() {;}
+  virtual void foo(size_t p1) 
+  {
+	std::cerr << "Error! ProductionClass foo should never be called" << std::endl;
+  }
+
+  virtual void bar(size_t p1, size_t p2)
+  {
+	std::cerr << "Error! ProductionClass bar should never be called" << std::endl;
+  }
+
+  virtual void baz()
+  {
+	std::cerr << "Error! ProductionClass baz should never be called" << std::endl;
+  }
 };
 
 int main()
 {
   typedef m0cxx0r::Mock<ProductionClass> MockClass;
   MockClass* mock = MockClass::create();
-  mock->expect("foo", &ProductionClass::foo);
-  mock->expect("bar", &ProductionClass::bar, 42);
+  mock->expect("foo", &ProductionClass::foo, 42);
+  mock->expect("bar", &ProductionClass::bar, 42, 43);
   mock->expect("baz", &ProductionClass::baz);
-  mock->foo();
-  mock->bar(3); // bad parameter
+  mock->foo(42);
+  mock->bar(3, 4); // bad parameters
   // missing call to baz
   mock->verify();
   MockClass::destroy(&mock);

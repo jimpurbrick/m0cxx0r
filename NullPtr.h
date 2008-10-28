@@ -26,35 +26,39 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "AnyParam.h"
+#ifndef M0CXX0R_NULLPTR_H
+#define M0CXX0R_NULLPTR_H
+
+#include "NullPtrParam.h"
 
 namespace m0cxx0r
 {
-	AnyParam::AnyParam()
+	template<typename T>
+	class NullPtr
 	{
-	}
+	public:
 
-	AnyParam::~AnyParam()
-	{
-	}
+		NullPtr()
+		{
+		}
 
-    Param* AnyParam::clone()
-	{
-		return new AnyParam();
-	}
+		Param* createParam(unsigned char* firstParam)
+		{
+			return new NullPtrParam(firstParam, reinterpret_cast<unsigned char*>(this));
+		}
 
-    void AnyParam::setValue(unsigned char* firstParam)
-	{
-	}
+		T* value()
+		{
+			T* result = NULL;
+			return result;
+		}
 
-    bool AnyParam::verify(Param* Param)
-	{
-		return true;
-	}
+	private:
 
-    std::string AnyParam::getString()
-	{
-		return "ANY";
-	}
+		// Pad type to make it sizeof T*.
+		T* mPadding;
+	};
 
 } // namespace m0cxx0r
+
+#endif // M0CXX0R_NULLPTR_H

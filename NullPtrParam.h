@@ -26,35 +26,31 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "AnyParam.h"
+#ifndef M0CXX0R_NULLPTRPARAM_H
+#define M0CXX0R_NULLPTRPARAM_H
+
+#include "Param.h"
 
 namespace m0cxx0r
 {
-	AnyParam::AnyParam()
+	class NullPtrParam : public Param
 	{
-	}
+	public:
 
-	AnyParam::~AnyParam()
-	{
-	}
+		NullPtrParam(unsigned char* firstParam, unsigned char* param);
+		virtual ~NullPtrParam();
+        virtual Param* clone();
+        virtual void setValue(unsigned char* p0);
+        virtual bool verify(Param* Param);
+        virtual std::string getString();
 
-    Param* AnyParam::clone()
-	{
-		return new AnyParam();
-	}
+	private:
 
-    void AnyParam::setValue(unsigned char* firstParam)
-	{
-	}
-
-    bool AnyParam::verify(Param* Param)
-	{
-		return true;
-	}
-
-    std::string AnyParam::getString()
-	{
-		return "ANY";
-	}
+		NullPtrParam() {;}
+		std::ptrdiff_t mOffset;
+		void* mValue;
+	};
 
 } // namespace m0cxx0r
+
+#endif // M0CXX0R_NULLPTRPARAM_H

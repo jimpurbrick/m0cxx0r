@@ -26,7 +26,12 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
+#include "Any.h"
+#include "AnyRef.h"
+#include "Equal.h"
 #include "Mock.h"
+#include "NotNullPtr.h"
+#include "NullPtr.h"
 
 class ProductionClass
 {
@@ -47,7 +52,7 @@ public:
         std::cerr << "Error! ProductionClass bar should never be called" << std::endl;
     }
 
-    virtual void baz(); // Deliberately no body to ensure this does not cause a linker error
+	virtual void baz(const std::string&, size_t*); // Deliberately no body to ensure this does not cause a linker error
 };
 
 using namespace m0cxx0r;
@@ -56,15 +61,14 @@ int main()
 {
     typedef Mock<ProductionClass> MockClass;
     MockClass* mock = MockClass::create();
-	mock->expect("foo", &ProductionClass::foo, 42);
-	// TODO: mock->repeat(2);
-    mock->expect("bar", &ProductionClass::bar, 42, AnyInt());
-	// TODO: mock->expect("foo", m0cxx0r::AnyValue, 42, m0cxx0r::NotNull)
-	// TODO: mock->repeat(m0cxx0r::ZERO_OR_MORE);
-    mock->expect("baz", &ProductionClass::baz);
+	mock->expect("foo", &ProductionClass::foo, Equal<int>(42));
+    mock->expect("bar", &ProductionClass::bar, Equal<int>(42), Any<int>());
+	mock->expect("baz", &ProductionClass::baz, AnyRef<const std::string>(), NullPtr<size_t>());
+	mock->expect("baz", &ProductionClass::baz, AnyRef<const std::string>(), NotNullPtr<size_t>());
     mock->foo(42);
-    mock->bar(3, 4); // bad parameters
-    // missing call to baz
+    mock->bar(3, 4); // bad parameter 0
+	mock->baz("test", NULL);
+	mock->baz("test", reinterpret_cast<size_t*>(16));
     mock->verify();
     MockClass::destroy(&mock);
 }

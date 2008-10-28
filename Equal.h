@@ -26,35 +26,39 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "AnyParam.h"
+#ifndef M0CXX0R_EQUAL_H
+#define M0CXX0R_EQUAL_H
+
+#include "EqualParam.h"
 
 namespace m0cxx0r
 {
-	AnyParam::AnyParam()
+	template<typename T>
+	class Equal
 	{
-	}
+	public:
 
-	AnyParam::~AnyParam()
-	{
-	}
+		Equal(T value) :
+			mValue(value)
+		{
+		}
 
-    Param* AnyParam::clone()
-	{
-		return new AnyParam();
-	}
+		Param* createParam(unsigned char* firstParam)
+		{
+			return new EqualParam<T>(firstParam, reinterpret_cast<unsigned char*>(this));
+		}
 
-    void AnyParam::setValue(unsigned char* firstParam)
-	{
-	}
+		T value()
+		{
+			return mValue;
+		}
 
-    bool AnyParam::verify(Param* Param)
-	{
-		return true;
-	}
+	private:
 
-    std::string AnyParam::getString()
-	{
-		return "ANY";
-	}
+		// Pad type to make it sizeof T.
+		T mValue;
+	};
 
 } // namespace m0cxx0r
+
+#endif // M0CXX0R_EQUAL_H

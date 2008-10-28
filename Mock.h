@@ -158,11 +158,12 @@ namespace m0cxx0r
             {
                 size_t callIndex = mActualCalls.size();
                 Call* expectedCall = mExpectedCalls[callIndex];
+				Call* actualCall = expectedCall->clone();
+				mActualCalls.push_back(actualCall);
+				actualCall->setIndex(index);
                 if(expectedCall->getIndex() == index)
                 {
-                    Call* actualCall = expectedCall->clone();
-                    actualCall->setParams(params);
-                    mActualCalls.push_back(actualCall);
+                    actualCall->setParams(params);   
                 }
             }
         }

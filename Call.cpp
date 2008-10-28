@@ -86,10 +86,16 @@ namespace m0cxx0r
 
 	bool Call::verify(Call* actual)
 	{
-		bool result = true;
+		if(mIndex != actual->mIndex)
+		{
+			std::cerr << "Failure! m0cxx0r expected call to " << getName()
+				<< std::endl;
+			return false;
+		}
 		size_t index = 0;
 		ParamVector::const_iterator expectedIter = mParameters.begin();
 		ParamVector::const_iterator actualIter = actual->mParameters.begin();
+		bool result = true;
 		while(expectedIter != mParameters.end())
 		{
 			if(! (*expectedIter)->verify(*actualIter))

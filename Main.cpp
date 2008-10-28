@@ -68,7 +68,7 @@ int main()
     mock->foo(42);
     mock->bar(3, 4); // bad parameter 0
 	mock->baz("test", NULL);
-	mock->baz("test", reinterpret_cast<size_t*>(16));
+	mock->baz("test", new size_t);
     mock->verify();
     MockClass::destroy(&mock);
 }

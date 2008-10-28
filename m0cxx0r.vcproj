@@ -88,8 +88,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Run Tests"
-				CommandLine="$(TargetPath)"
+				Description=""
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
@@ -167,8 +167,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Run Tests"
-				CommandLine="$(TargetPath)"
+				Description=""
+				CommandLine=""
 			/>
 		</Configuration>
 	</Configurations>
@@ -181,7 +181,19 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\m0cxx0r.cpp"
+				RelativePath=".\AnyParam.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Call.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Main.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Param.cpp"
 				>
 			</File>
 		</Filter>
@@ -190,6 +202,26 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\AnyParam.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Call.h"
+				>
+			</File>
+			<File
+				RelativePath=".\EqualParam.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Mock.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Param.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

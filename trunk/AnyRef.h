@@ -26,35 +26,39 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
+#ifndef M0CXX0R_ANYREF_H
+#define M0CXX0R_ANYREF_H
+
 #include "AnyParam.h"
 
 namespace m0cxx0r
 {
-	AnyParam::AnyParam()
+	template<typename T>
+	class AnyRef
 	{
-	}
+	public:
 
-	AnyParam::~AnyParam()
-	{
-	}
+		AnyRef() :
+			mValue(NULL)
+		{
+		}
 
-    Param* AnyParam::clone()
-	{
-		return new AnyParam();
-	}
+		Param* createParam(unsigned char* firstParam)
+		{
+			return new AnyParam();
+		}
 
-    void AnyParam::setValue(unsigned char* firstParam)
-	{
-	}
+		T& value()
+		{
+			return *mValue;
+		}
 
-    bool AnyParam::verify(Param* Param)
-	{
-		return true;
-	}
+	private:
 
-    std::string AnyParam::getString()
-	{
-		return "ANY";
-	}
+		// Pad type to make it sizeof T& (assumes ptr and ref are of equal size).
+		T* mValue;
+	};
 
 } // namespace m0cxx0r
+
+#endif // M0CXX0R_ANYREF_H

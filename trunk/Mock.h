@@ -29,8 +29,6 @@
 #ifndef M0CXX0R_MOCK_H
 #define M0CXX0R_MOCK_H
 
-#include "AnyParam.h"
-#include "EqualParam.h"
 #include "Call.h"
 
 #include <iostream>
@@ -38,34 +36,7 @@
 #include <string>
 
 namespace m0cxx0r
-{
-	template<typename T>
-	class Any
-	{
-	public:
-
-		Any()
-		{
-		}
-
-		operator T()
-		{
-			return mValue;
-		}
-
-	private:
-
-		// AnyInt has no virtual methods and contains a value of type int,
-		// so should be the same size as int and so create the same parameter
-		// offsets.
-		T mValue;
-	};
-
-	typedef Any<char> AnyChar;
-	typedef Any<unsigned char> AnyUnsignedChar;
-	typedef Any<int> AnyInt;
-	typedef Any<unsigned int> AnyUnsignedInt;
-
+{	
 	template<typename T>
     class Mock : public T
     {
@@ -115,9 +86,9 @@ namespace m0cxx0r
         {
             mRecordingExpected = true;
             Call* expectedCall = new Call(name);
-            expectedCall->addParameter(createParam(reinterpret_cast<unsigned char*>(&p0), &p0));
+            expectedCall->addParameter(p0.createParam(reinterpret_cast<unsigned char*>(&p0)));
             mExpectedCalls.push_back(expectedCall);
-            ((this)->*(func))(p0);
+            ((this)->*(func))(p0.value());
             mRecordingExpected = false;
         }
 
@@ -126,10 +97,10 @@ namespace m0cxx0r
         {
             mRecordingExpected = true;
             Call* expectedCall = new Call(name);
-            expectedCall->addParameter(createParam(reinterpret_cast<unsigned char*>(&p0), &p0));
-            expectedCall->addParameter(createParam(reinterpret_cast<unsigned char*>(&p0), &p1));
+            expectedCall->addParameter(p0.createParam(reinterpret_cast<unsigned char*>(&p0)));
+            expectedCall->addParameter(p1.createParam(reinterpret_cast<unsigned char*>(&p0)));
             mExpectedCalls.push_back(expectedCall);
-            ((this)->*(func))(p0, p1);
+            ((this)->*(func))(p0.value(), p1.value());
             mRecordingExpected = false;
         }
 
@@ -174,18 +145,6 @@ namespace m0cxx0r
             virtual void  f3(size_t p0) {((Mock*) this)->recordCall(3, (unsigned char*)(&p0));}
             // TODO: Add more virtual methods as needed.
         };
-
-		template<typename ParamType>
-		Param* createParam(unsigned char* param0, ParamType* param)
-		{
-			return new EqualParam<ParamType>(param0, param);
-		}
-
-		template<>
-		Param* createParam<AnyInt>(unsigned char* param0, AnyInt* param)
-		{
-			return new AnyParam();
-		}
 
         void recordCall(size_t index, unsigned char* params)
         {

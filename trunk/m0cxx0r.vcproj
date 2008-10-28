@@ -88,7 +88,6 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description=""
 				CommandLine=""
 			/>
 		</Configuration>
@@ -167,7 +166,6 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description=""
 				CommandLine=""
 			/>
 		</Configuration>
@@ -193,6 +191,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\NotNullPtrParam.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\NullPtrParam.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Param.cpp"
 				>
 			</File>
@@ -203,11 +209,23 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\Any.h"
+				>
+			</File>
+			<File
 				RelativePath=".\AnyParam.h"
 				>
 			</File>
 			<File
+				RelativePath=".\AnyRef.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Call.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Equal.h"
 				>
 			</File>
 			<File
@@ -216,6 +234,22 @@
 			</File>
 			<File
 				RelativePath=".\Mock.h"
+				>
+			</File>
+			<File
+				RelativePath=".\NotNullPtr.h"
+				>
+			</File>
+			<File
+				RelativePath=".\NotNullPtrParam.h"
+				>
+			</File>
+			<File
+				RelativePath=".\NullPtr.h"
+				>
+			</File>
+			<File
+				RelativePath=".\NullPtrParam.h"
 				>
 			</File>
 			<File

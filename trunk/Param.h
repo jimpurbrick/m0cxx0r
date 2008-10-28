@@ -40,8 +40,8 @@ namespace m0cxx0r
         Param();
         virtual ~Param();
         virtual Param* clone() = 0;
-        virtual void setValue(unsigned char* p0) = 0;
-        virtual bool isEqual(Param* Param) = 0;
+        virtual void setValue(unsigned char* firstParam) = 0;
+        virtual bool verify(Param* actual) = 0;
         virtual std::string getString() = 0;
     };
 

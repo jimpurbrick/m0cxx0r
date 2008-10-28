@@ -92,7 +92,7 @@ namespace m0cxx0r
 		ParamVector::const_iterator actualIter = actual->mParameters.begin();
 		while(expectedIter != mParameters.end())
 		{
-			if(! (*expectedIter)->isEqual(*actualIter))
+			if(! (*expectedIter)->verify(*actualIter))
 			{
 				result = false;
 				std::cerr << "Failure! m0cxx0r"

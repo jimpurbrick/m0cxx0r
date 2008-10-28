@@ -26,35 +26,58 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include "AnyParam.h"
+#include "NotNullPtrParam.h"
+
+#include <sstream>
 
 namespace m0cxx0r
 {
-	AnyParam::AnyParam()
+	NotNullPtrParam::NotNullPtrParam(unsigned char* firstParam, unsigned char* param) : 
+		mOffset(param - firstParam),
+		mValue(NULL)
 	{
 	}
 
-	AnyParam::~AnyParam()
+	NotNullPtrParam::~NotNullPtrParam()
 	{
 	}
 
-    Param* AnyParam::clone()
+    Param* NotNullPtrParam::clone()
+    {
+        NotNullPtrParam* result = new NotNullPtrParam();
+        result->mOffset = mOffset;
+        result->mValue = mValue;
+        return result;
+    }
+
+	void NotNullPtrParam::setValue(unsigned char* firstParam)
 	{
-		return new AnyParam();
+		void** param = reinterpret_cast<void**>(firstParam + mOffset);
+        mValue = *param;
 	}
 
-    void AnyParam::setValue(unsigned char* firstParam)
+    bool NotNullPtrParam::verify(Param* actualParam)
 	{
+		NotNullPtrParam* nullPtrParam = dynamic_cast<NotNullPtrParam*>(actualParam);
+		if(NULL == nullPtrParam)
+		{
+			return false;
+		}
+		return nullPtrParam->mValue != NULL;
 	}
 
-    bool AnyParam::verify(Param* Param)
+    std::string NotNullPtrParam::getString()
 	{
-		return true;
-	}
-
-    std::string AnyParam::getString()
-	{
-		return "ANY";
+        std::ostringstream stream;
+		if(mValue)
+		{
+			stream << "0x" << mValue;
+		}
+		else
+		{
+			stream << "NULL";
+		}
+        return stream.str();
 	}
 
 } // namespace m0cxx0r

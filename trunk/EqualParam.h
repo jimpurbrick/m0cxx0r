@@ -40,8 +40,8 @@ namespace m0cxx0r
     {
     public:
 
-        EqualParam(unsigned char* p0, ParamType* param) : 
-			mOffset(reinterpret_cast<unsigned char*>(param) - p0),
+        EqualParam(unsigned char* firstParam, unsigned char* param) : 
+			mOffset(param - firstParam),
             mValue(*param)
         {
         }
@@ -56,13 +56,13 @@ namespace m0cxx0r
             return result;
         }
 
-        virtual void setValue(unsigned char* p0)
+        virtual void setValue(unsigned char* firstParam)
         {
-            ParamType* param = reinterpret_cast<ParamType*>(p0 + mOffset);
+            ParamType* param = reinterpret_cast<ParamType*>(firstParam + mOffset);
             mValue = *param;
         }
 
-        virtual bool isEqual(Param* param)
+        virtual bool verify(Param* param)
         {
 			// TODO: dynamic cast when param may not be an EqualParam.
             EqualParam* equalParam = static_cast<EqualParam*>(param);

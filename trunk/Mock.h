@@ -81,17 +81,19 @@ namespace m0cxx0r
             mRecordingExpected = false;
         }
 
-        template<typename MemberFuncType, typename ParamType0>
-        void expect(const std::string& name, MemberFuncType func, ParamType0 p0)
+        template<typename ReturnType, typename MemberFuncType, typename ParamType0>
+        void expect(const std::string& name, ReturnType returnValue, MemberFuncType func, ParamType0 p0)
         {
             mRecordingExpected = true;
             Call* expectedCall = new Call(name);
-            expectedCall->addParameter(p0.createParam(reinterpret_cast<unsigned char*>(&p0)));
+			std::ptrdiff_t offset = returnOffset(returnValue.value());
+            expectedCall->addParameter(p0.createParam(offset, reinterpret_cast<unsigned char*>(&p0)));
             mExpectedCalls.push_back(expectedCall);
             ((this)->*(func))(p0.value());
             mRecordingExpected = false;
         }
 
+		/*
         template<typename MemberFuncType, typename ParamType0, typename ParamType1>
         void expect(const std::string& name, MemberFuncType func, ParamType0 p0, ParamType1 p1)
         {
@@ -103,6 +105,7 @@ namespace m0cxx0r
             ((this)->*(func))(p0.value(), p1.value());
             mRecordingExpected = false;
         }
+		*/
 
         bool verify()
         {
@@ -167,6 +170,23 @@ namespace m0cxx0r
                 }
             }
         }
+
+		template<typename T>
+		T firstParamAddress(unsigned char firstParam, T result, unsigned char** address)
+		{
+			*address = &firstParam;
+			return result;
+		}
+
+		template<typename T>
+		std::ptrdiff_t returnOffset(T value)
+		{
+			unsigned char* paramAddress = NULL;
+			unsigned char firstParam = 0;
+			unsigned char local;
+			firstParamAddress(firstParam, value, &paramAddress);
+			return paramAddress - &local;
+		}
 
         typedef std::vector<Call*> CallVector;
         CallVector mExpectedCalls;

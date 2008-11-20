@@ -45,7 +45,7 @@ namespace m0cxx0r
 
 		Param* createParam(std::ptrdiff_t offset, unsigned char* firstParam)
 		{
-			firstParam += offset;
+			firstParam -= offset;
 			return new EqualParam<T>(firstParam, reinterpret_cast<unsigned char*>(this));
 		}
 

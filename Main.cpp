@@ -37,39 +37,30 @@ class ProductionClass
 {
 public:
 
-    ProductionClass()
-    {
-    }
+    ProductionClass();
 
-    virtual ProductionClass foo(size_t p0) 
-    {
-        std::cerr << "Error! ProductionClass foo should never be called" << std::endl;
-		return ProductionClass();
-    }
+    virtual ProductionClass foo(size_t p0);
 
-    virtual ProductionClass* bar(size_t p0, size_t p1)
-    {
-        std::cerr << "Error! ProductionClass bar should never be called" << std::endl;
-		return NULL;
-    }
+    virtual ProductionClass* bar(size_t p0, size_t p1);
 
-	//virtual void baz(const std::string&, size_t*); // Deliberately no body to ensure this does not cause a linker error
+	virtual void baz(const std::string&, size_t*);
 };
 
 using namespace m0cxx0r;
 
 int main()
 {
+	int i = sizeof(ProductionClass);
     typedef Mock<ProductionClass> MockClass;
     MockClass* mock = MockClass::create();
-	mock->expect("foo", Any<ProductionClass>(), &ProductionClass::foo, Equal<int>(42));
-    //mock->expect("bar", &ProductionClass::bar, Equal<int>(42), Any<int>());
-	//mock->expect("baz", &ProductionClass::baz, AnyRef<const std::string>(), NullPtr<size_t>());
-	//mock->expect("baz", &ProductionClass::baz, AnyRef<const std::string>(), NotNullPtr<size_t>());
+	mock->expect<ProductionClass>("foo", &ProductionClass::foo, Equal<int>(42));
+    mock->expect<ProductionClass*>("bar", &ProductionClass::bar, Equal<int>(42), Any<int>());
+	mock->expect<void>("baz", &ProductionClass::baz, AnyRef<const std::string>(), NullPtr<size_t>());
+	mock->expect<void>("baz", &ProductionClass::baz, AnyRef<const std::string>(), NotNullPtr<size_t>());
     mock->foo(42);
-    //mock->bar(3, 4); // bad parameter 0
-	//mock->baz("test", NULL);
-	//mock->baz("test", new size_t);
+    mock->bar(3, 4); // bad parameter 0
+	mock->baz("test", NULL);
+	mock->baz("test", new size_t);
     mock->verify();
     MockClass::destroy(&mock);
 }

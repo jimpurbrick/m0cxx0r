@@ -35,8 +35,10 @@
 #include <vector>
 #include <string>
 
+#include <boost/type_traits.hpp>
+
 namespace m0cxx0r
-{	
+{
 	template<typename T>
     class Mock : public T
     {
@@ -82,30 +84,29 @@ namespace m0cxx0r
         }
 
         template<typename ReturnType, typename MemberFuncType, typename ParamType0>
-        void expect(const std::string& name, ReturnType returnValue, MemberFuncType func, ParamType0 p0)
+        void expect(const std::string& name, MemberFuncType func, ParamType0 p0/*, ReturnType returnValue*/)
         {
             mRecordingExpected = true;
             Call* expectedCall = new Call(name);
-			std::ptrdiff_t offset = returnOffset(returnValue.value());
+			std::ptrdiff_t offset = returnOffset<ReturnType>();
             expectedCall->addParameter(p0.createParam(offset, reinterpret_cast<unsigned char*>(&p0)));
             mExpectedCalls.push_back(expectedCall);
             ((this)->*(func))(p0.value());
             mRecordingExpected = false;
         }
 
-		/*
-        template<typename MemberFuncType, typename ParamType0, typename ParamType1>
+        template<typename ReturnType, typename MemberFuncType, typename ParamType0, typename ParamType1>
         void expect(const std::string& name, MemberFuncType func, ParamType0 p0, ParamType1 p1)
         {
             mRecordingExpected = true;
             Call* expectedCall = new Call(name);
-            expectedCall->addParameter(p0.createParam(reinterpret_cast<unsigned char*>(&p0)));
-            expectedCall->addParameter(p1.createParam(reinterpret_cast<unsigned char*>(&p0)));
+			std::ptrdiff_t offset = returnOffset<ReturnType>();
+            expectedCall->addParameter(p0.createParam(offset, reinterpret_cast<unsigned char*>(&p0)));
+            expectedCall->addParameter(p1.createParam(offset, reinterpret_cast<unsigned char*>(&p0)));
             mExpectedCalls.push_back(expectedCall);
             ((this)->*(func))(p0.value(), p1.value());
             mRecordingExpected = false;
         }
-		*/
 
         bool verify()
         {
@@ -129,6 +130,9 @@ namespace m0cxx0r
 
     private:
 
+		int returnOffset(void*) {return 0;}
+		int returnOffset(...) {return 1;}
+		
         Mock()
         {
             std::cerr << "Error! m0cxx0r::Mock objects must not be constructed" 
@@ -178,14 +182,34 @@ namespace m0cxx0r
 			return result;
 		}
 
+		/*
 		template<typename T>
 		std::ptrdiff_t returnOffset(T value)
 		{
 			unsigned char* paramAddress = NULL;
 			unsigned char firstParam = 0;
 			unsigned char local;
-			firstParamAddress(firstParam, value, &paramAddress);
-			return paramAddress - &local;
+			value = firstParamAddress(firstParam, value, &paramAddress);
+			//return &local - paramAddress;
+			return 0;
+		}
+		*/
+
+		// TODO: Test on GCC.
+		template<typename T>
+		std::ptrdiff_t returnOffset()
+		{
+			if(::boost::is_pointer<T>::value)
+			{
+				return 0;
+			}
+			return sizeof(T);
+		}
+
+		template<>
+		std::ptrdiff_t returnOffset<void>()
+		{
+			return 0;
 		}
 
         typedef std::vector<Call*> CallVector;

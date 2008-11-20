@@ -43,7 +43,7 @@ namespace m0cxx0r
 		{
 		}
 
-		Param* createParam(unsigned char* firstParam)
+		Param* createParam(std::ptrdiff_t offset, unsigned char* firstParam)
 		{
 			return new AnyParam();
 		}

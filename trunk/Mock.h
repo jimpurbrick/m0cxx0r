@@ -39,9 +39,33 @@
 
 namespace m0cxx0r
 {
+	// TODO: Test on GCC.
+	template<typename T>
+	std::ptrdiff_t returnOffset()
+	{
+		// Return via registers, no offset.
+		if(::boost::is_pointer<T>::value)
+		{
+			return 0;
+		}
+
+		// Return in memory, offset by sizeof pointer to return address.
+		return sizeof(void*);
+	}
+
+	template<>
+	std::ptrdiff_t returnOffset<void>()
+	{
+		return 0;
+	}
+	
 	template<typename T>
     class Mock : public T
     {
+	private:
+		
+		typedef std::vector<Call*> CallVector;
+
     public:
 
         static Mock* create()
@@ -60,6 +84,7 @@ namespace m0cxx0r
             mock->mActualCalls = std::vector<Call*>();
             mock->mRecordingExpected = false;
 
+			self = mock;
             return mock;
         }
 
@@ -88,7 +113,7 @@ namespace m0cxx0r
         {
             mRecordingExpected = true;
             Call* expectedCall = new Call(name);
-			std::ptrdiff_t offset = returnOffset<ReturnType>();
+			std::ptrdiff_t offset = m0cxx0r::returnOffset<ReturnType>();
             expectedCall->addParameter(p0.createParam(offset, reinterpret_cast<unsigned char*>(&p0)));
             mExpectedCalls.push_back(expectedCall);
             ((this)->*(func))(p0.value());
@@ -100,7 +125,7 @@ namespace m0cxx0r
         {
             mRecordingExpected = true;
             Call* expectedCall = new Call(name);
-			std::ptrdiff_t offset = returnOffset<ReturnType>();
+			std::ptrdiff_t offset = m0cxx0r::returnOffset<ReturnType>();
             expectedCall->addParameter(p0.createParam(offset, reinterpret_cast<unsigned char*>(&p0)));
             expectedCall->addParameter(p1.createParam(offset, reinterpret_cast<unsigned char*>(&p0)));
             mExpectedCalls.push_back(expectedCall);
@@ -113,11 +138,12 @@ namespace m0cxx0r
             bool result = true;
             CallVector::const_iterator actualIter = mActualCalls.begin();
             CallVector::const_iterator expectedIter = mExpectedCalls.begin();
-            while(actualIter != mActualCalls.end())
+            while(actualIter != mActualCalls.end() &&
+				  expectedIter != mExpectedCalls.end())
             {
                 result &= (*expectedIter)->verify(*actualIter);
                 ++actualIter;
-                ++expectedIter;
+				++expectedIter;
             }
             while(expectedIter != mExpectedCalls.end())
             {
@@ -129,9 +155,6 @@ namespace m0cxx0r
         }
 
     private:
-
-		int returnOffset(void*) {return 0;}
-		int returnOffset(...) {return 1;}
 		
         Mock()
         {
@@ -144,12 +167,11 @@ namespace m0cxx0r
             std::cerr << "Error! m0cxx0r::Mock objects must not be deleted" 
                 << std::endl;
         }
-
         class VTableDonor
         {
-            virtual void  f1(size_t p0) {((Mock*) this)->recordCall(1, (unsigned char*)(&p0));}
-            virtual void  f2(size_t p0) {((Mock*) this)->recordCall(2, (unsigned char*)(&p0));}
-            virtual void  f3(size_t p0) {((Mock*) this)->recordCall(3, (unsigned char*)(&p0));}
+            virtual void  f1(size_t p0) {m0cxx0r::Mock<T>::self->recordCall(1, (unsigned char*)(&p0));}
+            virtual void  f2(size_t p0) {m0cxx0r::Mock<T>::self->recordCall(2, (unsigned char*)(&p0));}
+            virtual void  f3(size_t p0) {m0cxx0r::Mock<T>::self->recordCall(3, (unsigned char*)(&p0));}
             // TODO: Add more virtual methods as needed.
         };
 
@@ -175,47 +197,11 @@ namespace m0cxx0r
             }
         }
 
-		template<typename T>
-		T firstParamAddress(unsigned char firstParam, T result, unsigned char** address)
-		{
-			*address = &firstParam;
-			return result;
-		}
-
-		/*
-		template<typename T>
-		std::ptrdiff_t returnOffset(T value)
-		{
-			unsigned char* paramAddress = NULL;
-			unsigned char firstParam = 0;
-			unsigned char local;
-			value = firstParamAddress(firstParam, value, &paramAddress);
-			//return &local - paramAddress;
-			return 0;
-		}
-		*/
-
-		// TODO: Test on GCC.
-		template<typename T>
-		std::ptrdiff_t returnOffset()
-		{
-			if(::boost::is_pointer<T>::value)
-			{
-				return 0;
-			}
-			return sizeof(T);
-		}
-
-		template<>
-		std::ptrdiff_t returnOffset<void>()
-		{
-			return 0;
-		}
-
-        typedef std::vector<Call*> CallVector;
         CallVector mExpectedCalls;
         CallVector mActualCalls;
         bool mRecordingExpected;
+		static Mock* self;
+		friend class VTableDonor;
     };
 	
 } // namespace m0cxx0r

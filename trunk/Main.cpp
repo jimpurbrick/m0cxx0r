@@ -37,16 +37,16 @@ class ProductionClass
 {
 public:
 
-    ProductionClass();
+    ProductionClass() {;}
 
-    virtual ProductionClass foo(size_t p0);
-
-    virtual ProductionClass* bar(size_t p0, size_t p1);
-
-	virtual void baz(const std::string&, size_t*);
+    virtual ProductionClass foo(size_t p0) {return ProductionClass();}
+    virtual ProductionClass* bar(size_t p0, size_t p1) {return new ProductionClass();}
+	virtual void baz(const std::string&, size_t*) {;}
 };
 
 using namespace m0cxx0r;
+
+m0cxx0r::Mock<ProductionClass>* m0cxx0r::Mock<ProductionClass>::self;
 
 int main()
 {

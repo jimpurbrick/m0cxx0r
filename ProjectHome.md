@@ -1,0 +1,1 @@
+A library for automatically creating mock objects in C++, setting expectations for calls on those objects and subsequently verifying that the expected calls were made.
